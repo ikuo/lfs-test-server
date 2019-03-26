@@ -43,6 +43,11 @@ func (s *ContentStore) Get(meta *MetaObject, fromByte int64) (io.ReadCloser, err
 	return f, err
 }
 
+func (s *ContentStore) DeleteByOid(oid string) error {
+	path := filepath.Join(s.basePath, transformKey(oid))
+	return os.Remove(path)
+}
+
 // Put takes a Meta object and an io.Reader and writes the content to the store.
 func (s *ContentStore) Put(meta *MetaObject, r io.Reader) error {
 	path := filepath.Join(s.basePath, transformKey(meta.Oid))

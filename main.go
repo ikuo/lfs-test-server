@@ -65,6 +65,28 @@ func main() {
 		os.Exit(0)
 	}
 
+	metaStore, err := NewMetaStore(Config.MetaDB)
+	if err != nil {
+		logger.Fatal(kv{"fn": "main", "err": "Could not open the meta store: " + err.Error()})
+	}
+
+	contentStore, err := NewContentStore(Config.ContentPath)
+	if err != nil {
+		logger.Fatal(kv{"fn": "main", "err": "Could not open the content store: " + err.Error()})
+	}
+
+	if len(os.Args) == 3 && os.Args[1] == "--rm" {
+		oid := os.Args[2]
+		fmt.Printf("Removing object %s\n", oid)
+		if err := metaStore.DeleteByOid(oid); err != nil {
+			logger.Fatal(kv{"fn": "main", "err": "Could not delete an object on the meta store: " + err.Error()})
+		}
+		if err := contentStore.DeleteByOid(oid); err != nil {
+			logger.Fatal(kv{"fn": "main", "err": "Could not delete an object on the content store: " + err.Error()})
+		}
+		os.Exit(0)
+	}
+
 	var listener net.Listener
 
 	tl, err := NewTrackingListener(Config.Listen)
@@ -80,16 +102,6 @@ func main() {
 		if err != nil {
 			logger.Fatal(kv{"fn": "main", "err": "Could not create https listener: " + err.Error()})
 		}
-	}
-
-	metaStore, err := NewMetaStore(Config.MetaDB)
-	if err != nil {
-		logger.Fatal(kv{"fn": "main", "err": "Could not open the meta store: " + err.Error()})
-	}
-
-	contentStore, err := NewContentStore(Config.ContentPath)
-	if err != nil {
-		logger.Fatal(kv{"fn": "main", "err": "Could not open the content store: " + err.Error()})
 	}
 
 	c := make(chan os.Signal, 1)

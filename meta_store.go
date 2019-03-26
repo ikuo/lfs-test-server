@@ -132,13 +132,17 @@ func (s *MetaStore) Put(v *RequestVars) (*MetaObject, error) {
 
 // Delete removes the meta information from RequestVars to the store.
 func (s *MetaStore) Delete(v *RequestVars) error {
+	return s.DeleteByOid(v.Oid)
+}
+
+func (s *MetaStore) DeleteByOid(oid string) error {
 	err := s.db.Update(func(tx *bolt.Tx) error {
 		bucket := tx.Bucket(objectsBucket)
 		if bucket == nil {
 			return errNoBucket
 		}
 
-		err := bucket.Delete([]byte(v.Oid))
+		err := bucket.Delete([]byte(oid))
 		if err != nil {
 			return err
 		}
